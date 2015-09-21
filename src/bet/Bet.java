@@ -11,96 +11,101 @@ import java.util.Random;
  */
 public class Bet {
 
-    final static int attempts = 1000;
-    
-    final static int numPlayers = 100;
-    final static int numBoxesCanOpen = 50;
+	final static int attempts = 1000;
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        Bet bet = new Bet();
-        bet.start();
+	final static int numPlayers = 100;
+	final static int numBoxesCanOpen = 50;
 
-    }
+	/**
+	 * @param args the command line arguments
+	 */
+	public static void main(String[] args) {
+		Bet bet = new Bet();
+		bet.start();
 
-    public void start() {
-        doGame(new RandomStrategy());
-        doGame(new SmartStrategy());
-    }
+	}
 
-    private void doGame(Strategy strategy) {
-        int win = 0;
-        int lost = 0;
+	public void start() {
+		doGame(new RandomStrategy());
+		doGame(new SmartStrategy());
+	}
 
-        for (int j = 0; j < attempts; j++) {
+	private void doGame(Strategy strategy) {
+		int win = 0;
+		int lost = 0;
 
-            //Preparación
-            boolean gameLost = false;
-            List<Integer> boxes = new ArrayList<>();
-            for (int i = 0; i < numPlayers; i++) {
-                boxes.add(i);
-            }
-            Collections.shuffle(boxes);
+		for (int j = 0; j < attempts; j++) {
 
-            //Empieza el juego
-            for (int i = 0; i < numPlayers && !gameLost; i++) {
-                boolean foundIt = strategy.doStrategy(i, boxes);
-                if (!foundIt) {
-                    //Perdieron
-                    lost++;
-                    gameLost = true;
-                }
-            }
-            if (!gameLost) {
-                //Ganaron
-                win++;
-            }
-        }
+			//Preparación
+			boolean gameLost = false;
+			List<Integer> boxes = new ArrayList<>();
+			for (int i = 0; i < numPlayers; i++) {
+				boxes.add(i);
+			}
+			Collections.shuffle(boxes);
 
-        Double winPer = (double) win / attempts * 100;
-        Double lostPer = (double) lost / attempts * 100;
-        System.out.println("Victorias: " + win + "\t Porcentage: " + winPer + "%");
-        System.out.println("Derrotas: " + lost + "\t Porcentage: " + lostPer + "%");
-    }
+			//Empieza el juego
+			for (int i = 0; i < numPlayers && !gameLost; i++) {
+				boolean foundIt = strategy.doStrategy(i, boxes);
+				if (!foundIt) {
+					//Perdieron
+					lost++;
+					gameLost = true;
+				}
+			}
+			if (!gameLost) {
+				//Ganaron
+				win++;
+			}
+		}
 
-    public interface Strategy {
+		Double winPer = (double) win / attempts * 100;
+		Double lostPer = (double) lost / attempts * 100;
+		System.out.println("Victorias: " + win + "\t Porcentage: " + winPer + "%");
+		System.out.println("Derrotas: " + lost + "\t Porcentage: " + lostPer + "%");
+	}
 
-        public boolean doStrategy(Integer bill, List<Integer> list);
-    }
+	public interface Strategy {
 
-    public class RandomStrategy implements Strategy {
+		public boolean doStrategy(Integer bill, List<Integer> list);
+	}
 
-        @Override
-        public boolean doStrategy(Integer bill, List<Integer> list) {
-            List<Integer> copyList = new ArrayList(list);
-            Random rand = new Random();
-            int i = 0;
-            while (copyList.size() > 0 && i < numBoxesCanOpen) {
-                int index = rand.nextInt(copyList.size());
-                Integer selected = copyList.remove(index);
-                if (selected.equals(bill)) {
-                    return true;
-                }
-                i++;
-            }
-            return false;
-        }
+	public class RandomStrategy implements Strategy {
 
-    }
+		@Override
+		public boolean doStrategy(Integer bill, List<Integer> list) {
+			List<Integer> copyList = new ArrayList(list);
+			Random rand = new Random();
+			int i = 0;
+			while (copyList.size() > 0 && i < numBoxesCanOpen) {
+				int index = rand.nextInt(copyList.size());
+				Integer selected = copyList.remove(index);
+				if (selected.equals(bill)) {
+					return true;
+				}
+				i++;
+			}
+			return false;
+		}
 
-    public class SmartStrategy implements Strategy {
+	}
 
-        @Override
-        public boolean doStrategy(Integer bill, List<Integer> list) {
-            Integer selected = list.get(bill);
-            boolean foundIt = selected.equals(bill);
-            for (int i = 0; i < numBoxesCanOpen && !foundIt; i++) {
-                selected = list.get(selected);
-                foundIt = selected.equals(bill);
-            }
-            return foundIt;
-        }
-    }
+	public class SmartStrategy implements Strategy {
+
+		@Override
+		public boolean doStrategy(Integer bill, List<Integer> list) {
+			int i = 0;
+			boolean foundIt;
+			Integer aux= bill;
+			do {
+				Integer selected = list.get(aux);
+				foundIt = selected.equals(bill);
+				aux = selected;
+				i++;
+
+			} while (i < numBoxesCanOpen && !foundIt);
+
+			return foundIt;
+		}
+	}
 }
